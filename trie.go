@@ -5,10 +5,7 @@
 // nodes that have letter values associated with them.
 package trie
 
-import (
-    "sort"
-    "sync"
-)
+import "sort"
 
 type Node struct {
     val       rune
@@ -23,7 +20,6 @@ type Node struct {
 }
 
 type Trie struct {
-    mu   sync.Mutex
     root *Node
     size int
 }
@@ -53,8 +49,6 @@ func (t *Trie) Root() *Node {
 // is stored as `interface{}` and must be type cast by
 // the caller.
 func (t *Trie) Add(key string, meta interface{}) *Node {
-    t.mu.Lock()
-
     t.size++
     runes := []rune(key)
     bitmask := maskruneslice(runes)
@@ -73,7 +67,6 @@ func (t *Trie) Add(key string, meta interface{}) *Node {
         node.termCount++
     }
     node = node.NewChild(nul, key, 0, meta, true)
-    t.mu.Unlock()
 
     return node
 }
@@ -107,7 +100,6 @@ func (t *Trie) Remove(key string) {
         rs   = []rune(key)
         node = findNode(t.Root(), []rune(key))
     )
-    t.mu.Lock()
 
     t.size--
     for n := node.Parent(); n != nil; n = n.Parent() {
@@ -118,7 +110,6 @@ func (t *Trie) Remove(key string) {
             break
         }
     }
-    t.mu.Unlock()
 }
 
 // Returns all the keys currently stored in the trie.
